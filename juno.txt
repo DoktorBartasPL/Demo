@@ -1,0 +1,228 @@
+#include <MsgBoxConstants.au3>
+#include <Word.au3>
+#include <FileConstants.au3>
+#include <WinAPIFiles.au3>
+#include <ButtonConstants.au3>
+#include <EditConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <WindowsConstants.au3>
+#include <Date.au3>
+
+;=============
+;VARS
+;=============
+
+;=============
+;GUI
+;=============
+
+$mainGUI = GUICreate("Project Juno", 600, 600)
+
+$tabMain = GUICtrlCreateTab(0, 0, 600, 600)
+
+;=============
+$tab1 = GUICtrlCreateTabItem("Basic info")
+;=============
+
+$groupP1 = GUICtrlCreateGroup ("1. What is the reason for the change? Who from XXX has requested the change? Incident Number/ALM Number?", 10, 30, 580, 70)
+GUICtrlSetBkColor($groupP1, 0x7DCCBD)
+	$editReasonForChange = GUICtrlCreateEdit("", 15, 45, 570, 50, $ES_MULTILINE + $WS_VSCROLL + $ES_WANTRETURN)
+
+$groupP2 = GUICtrlCreateGroup ("2. What's being changed?", 10, 100, 580, 120)
+GUICtrlSetBkColor($groupP2, 0xC6A664)
+	$editWhatChanges = GUICtrlCreateEdit("", 15, 115, 570, 100, $ES_MULTILINE + $WS_VSCROLL + $ES_WANTRETURN)
+
+GUICtrlCreateGroup ("3. Time frame?", 10, 220, 580, 65)
+	GUICtrlCreateLabel("Start date:", 15, 237)
+	$inputStartDateTab1 = GUICtrlCreateInput(_NowCalc(), 15, 255, 140)
+	$buttonDateCopy = GUICtrlCreateButton("=", 160, 235, 40, 40)
+	$buttonDateAddHour = GUICtrlCreateButton("+1h", 205, 235, 40, 40)
+	GUICtrlCreateLabel("End date:", 255, 237)
+	$inputEndDateTab1 = GUICtrlCreateInput(_NowCalc(), 255, 255, 140)
+	$buttonChangeDuration = GUICtrlCreateButton("Duration: 0h 0m", 400,235, 140, 40)
+	$buttonDateToday = GUICtrlCreateButton("Reset", 545, 235, 40, 40)
+
+GUICtrlCreateGroup ("4. Which services / CI’s are affected and HOW? What are the effects on XXX users?", 10, 290, 580, 70)
+	$editAffectedCI = GUICtrlCreateEdit("Services affected: Content Manager" & @CRLF & @CRLF & "Customer impact:", 15, 305, 570, 50, $ES_MULTILINE + $WS_VSCROLL + $ES_WANTRETURN)
+
+GUICtrlCreateGroup ("5. What is the risk? Is EOD/EOM/EOY affected?", 10, 360, 580, 70)
+	GUICtrlCreateList("0 - No risk", 15, 375, 160, 45)
+	GUICtrlSetData(-1, "1 – Low risk")
+	GUICtrlSetData(-1, "2 – Some risk")
+	GUICtrlSetData(-1, "3 – Moderate risk")
+	GUICtrlSetData(-1, "4 – High risk")
+	GUICtrlSetData(-1, "5 – Very high risk")
+	$checkboxEODEOMEOY = GUICtrlCreateCheckbox("EOD/EOM/EOY affected", 200, 375, 150, 45)
+	$editEODEOMEOY = GUICtrlCreateEdit("", 350, 375, 235, 50, $ES_MULTILINE + $WS_VSCROLL + $ES_WANTRETURN)
+	GUICtrlSetState($editEODEOMEOY, $GUI_DISABLE)
+
+GUICtrlCreateGroup ("6. Please provide written proof of the successful test / Why is a test not necessary", 10, 430, 580, 120)
+	$editTests = GUICtrlCreateEdit("", 15, 445, 570, 100, $ES_MULTILINE + $WS_VSCROLL + $ES_WANTRETURN)
+
+;=============
+$tab2 = GUICtrlCreateTabItem("Additional info")
+;=============
+
+$groupDateReuse = GUICtrlCreateGroup ("Re-use dates", 10, 30, 580, 50)
+GUICtrlSetBkColor($groupDateReuse, 0x7DCCBD)
+	$checkboxUsedate = GUICtrlCreateCheckbox("Use date from 3.?", 15, 50, 120)
+	GUICtrlSetState($checkboxUsedate, $GUI_CHECKED)
+	GUICtrlCreateLabel("Start date:", 140, 55)
+	$inputStartDateTab2 = GUICtrlCreateInput(_NowCalc(), 200, 50, 140)
+	GUICtrlSetState($inputStartDateTab2, $GUI_DISABLE)
+	GUICtrlCreateLabel("End date:", 350, 55)
+	$inputEndDateTab2 = GUICtrlCreateInput(_NowCalc(), 420, 50, 140)
+	GUICtrlSetState($inputEndDateTab2, $GUI_DISABLE)
+
+GUICtrlCreateGroup ("7. Schedule and possible fallback", 10, 80, 580, 90)
+	GUICtrlCreateLabel("Team responsible:", 15, 100)
+	$editSchedule = GUICtrlCreateEdit("Change will be implemented by XXX).", 15, 115, 230, 50, $ES_MULTILINE + $WS_VSCROLL + $ES_WANTRETURN)
+	GUICtrlCreateLabel("Fallback:", 250, 100)
+	$editFallback = GUICtrlCreateEdit("", 250, 115, 335, 50, $ES_MULTILINE + $WS_VSCROLL + $ES_WANTRETURN)
+
+GUICtrlCreateGroup ("8. Time and resources confirmation", 10, 170, 580, 70)
+	$buttonTimeAndResourcesCopy = GUICtrlCreateButton("Copy from 7", 15, 185, 80, 50)
+	$editTimeAndResources = GUICtrlCreateEdit("", 100, 185, 485, 50, $ES_MULTILINE + $WS_VSCROLL + $ES_WANTRETURN)
+
+GUICtrlCreateGroup ("9. Does the ticket have to be transferred to HPSM?", 10, 240, 580, 50)
+	$hRadio1 = GUICtrlCreateRadio("No", 15, 260, 50, 20)
+	$hRadio2 = GUICtrlCreateRadio("Yes", 65, 260,50, 20)
+	GUICtrlSetState($hRadio1, $GUI_CHECKED)
+	$inputHPSM = GUICtrlCreateInput("", 120, 260, 465)
+	GUICtrlSetState($inputHPSM, $GUI_DISABLE)
+
+GUICtrlCreateGroup ("10. How and when was the pilot successful?", 10, 290, 580, 50)
+	$hRadio1 = GUICtrlCreateRadio("N/A", 15, 310, 50, 20)
+	$hRadio2 = GUICtrlCreateRadio("Yes", 65, 310,50, 20)
+	GUICtrlSetState($hRadio1, $GUI_CHECKED)
+	$inputPilot = GUICtrlCreateInput("", 120, 310, 465)
+	GUICtrlSetState($inputPilot, $GUI_DISABLE)
+
+GUICtrlCreateGroup ("11. Should CMDB be updated? (CI attributes and relations)", 10, 340, 580, 70)
+	$hRadio1 = GUICtrlCreateRadio("No", 15, 360, 50, 20)
+	$hRadio2 = GUICtrlCreateRadio("Yes", 65, 360,50, 20)
+	GUICtrlSetState($hRadio1, $GUI_CHECKED)
+	$editCI = GUICtrlCreateEdit("", 120, 355, 465, 50, $ES_MULTILINE + $WS_VSCROLL + $ES_WANTRETURN)
+	GUICtrlSetState($editCI, $GUI_DISABLE)
+
+GUICtrlCreateGroup ("12. Does the change comply with the security target?", 10, 410, 580, 50)
+	$hRadio1 = GUICtrlCreateRadio("Yes", 15, 430, 50, 20)
+	$hRadio2 = GUICtrlCreateRadio("No", 65, 430,50, 20)
+	GUICtrlSetState($hRadio1, $GUI_CHECKED)
+	$inputSecurity = GUICtrlCreateInput("", 120, 430, 465)
+	GUICtrlSetState($inputSecurity, $GUI_DISABLE)
+
+GUICtrlCreateGroup ("13. Does the change comply with the security target?", 10, 460, 580, 50)
+	$hRadio1 = GUICtrlCreateRadio("Yes", 15, 480, 50, 20)
+	$hRadio2 = GUICtrlCreateRadio("No", 65, 480,50, 20)
+	GUICtrlSetState($hRadio1, $GUI_CHECKED)
+	$inputSecurity = GUICtrlCreateInput("", 120, 480, 465)
+	GUICtrlSetState($inputSecurity, $GUI_DISABLE)
+
+GUICtrlCreateGroup ("14. Are there any other additions?", 10, 510, 580, 70)
+	$hRadio1 = GUICtrlCreateRadio("No", 15, 530, 50, 20)
+	$hRadio2 = GUICtrlCreateRadio("Yes", 65, 530,50, 20)
+	GUICtrlSetState($hRadio1, $GUI_CHECKED)
+	$editCI = GUICtrlCreateEdit("", 120, 525, 465, 50, $ES_MULTILINE + $WS_VSCROLL + $ES_WANTRETURN)
+	GUICtrlSetState($editCI, $GUI_DISABLE)
+
+;=============
+$tab3 = GUICtrlCreateTabItem("Execute")
+;=============
+
+GUICtrlCreateTabItem("")
+
+;=============
+;RUN GUI
+;=============
+
+GUISetState(@SW_SHOW)
+
+While 1
+	$nMsg = GUIGetMsg()
+	Switch $nMsg
+		Case $GUI_EVENT_CLOSE
+			Exit
+		Case $tabMain
+			UseDateFromTab1()
+		Case $buttonDateCopy
+			DateCopy()
+		Case $buttonDateAddHour
+			Add1hr()
+		Case $buttonChangeDuration
+			DateDiff()
+		Case $buttonDateToday
+			DateToday()
+		Case $checkboxEODEOMEOY
+			ImpactEODEOMEOY()
+		Case $checkboxUsedate
+			UseDateFromTab1()
+		Case $buttonTimeAndResourcesCopy
+			TimeAndResources()
+	EndSwitch
+WEnd
+
+
+
+;=============
+;FUNCTIONS
+;=============
+
+Func DateCopy()
+	GUICtrlSetData($inputEndDateTab1, GUICtrlRead($inputStartDateTab1))
+EndFunc
+
+Func DateToday()
+	GUICtrlSetData($inputStartDateTab1, _NowCalc())
+	GUICtrlSetData($inputEndDateTab1, _NowCalc())
+EndFunc
+
+Func Add1hr()
+	Local $tempStartDate = GUICtrlRead($inputStartDateTab1)
+	Local $tempNewDate = _DateAdd('h', 1, GUICtrlRead($inputEndDateTab1))
+	GUICtrlSetData($inputEndDateTab1, $tempNewDate)
+	DateDiff()
+EndFunc
+
+Func DateDiff()
+	GUICtrlSetData($buttonChangeDuration, "Duration: " & _DateDiff('h', GUICtrlRead($inputStartDateTab1), GUICtrlRead($inputEndDateTab1)) & "h " & Mod(_DateDiff('n', GUICtrlRead($inputStartDateTab1), GUICtrlRead($inputEndDateTab1)), 60) & "m")
+EndFunc
+
+Func ImpactEODEOMEOY()
+	If GUICtrlRead($checkboxEODEOMEOY) = $GUI_CHECKED Then
+		GUICtrlSetState($editEODEOMEOY, $GUI_ENABLE)
+	Else
+		GUICtrlSetState($editEODEOMEOY, $GUI_DISABLE)
+		GUICtrlSetData($editEODEOMEOY,"")
+	EndIf
+EndFunc
+
+Func UseDateFromTab1()
+	If GUICtrlRead($checkboxUsedate) = $GUI_CHECKED Then
+		GUICtrlSetData($inputStartDateTab2, GUICtrlRead($inputStartDateTab1))
+		GUICtrlSetData($inputEndDateTab2, GUICtrlRead($inputEndDateTab1))
+		GUICtrlSetState($inputStartDateTab2, $GUI_DISABLE)
+		GUICtrlSetState($inputEndDateTab2, $GUI_DISABLE)
+	Else
+		GUICtrlSetData($inputStartDateTab2, _NowCalc())
+		GUICtrlSetData($inputEndDateTab2, _NowCalc())
+		GUICtrlSetState($inputStartDateTab2, $GUI_ENABLE)
+		GUICtrlSetState($inputEndDateTab2, $GUI_ENABLE)
+	EndIf
+EndFunc
+
+Func TimeAndResources()
+	Local $text = GUICtrlRead($editSchedule)
+	GUICtrlSetData($editTimeAndResources, "Change start: " & GUICtrlRead($inputStartDateTab2) & @CRLF & "Change end: " & GUICtrlRead($inputEndDateTab2) & @CRLF & @CRLF & $text)
+EndFunc
+;~ _Word_Create()
+
+;~ Global $oWord = _Word_Create()
+;~ Global $oDoc = _Word_DocAdd($oWord)
+;~ $oRange = _Word_DocRangeSet($oDoc, 0) ; Use current selection
+;~ $oRange.InsertFile(@ScriptDir & "\gerTemp.docx")
+;~ $oRange = _Word_DocRangeSet($oDoc, -2)
+
+;~ ;Section 1
+;~ $oRange.InsertAfter("==========================================================" & @CRLF & "1. What is the reason for the change? Who from XXX has requested the change? Incident Number/ALM Number?" & @CRLF & "=========================================================" & @CRLF & @CRLF)
+;~ $oRange.InsertAfter("")
