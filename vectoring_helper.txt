@@ -1,0 +1,109 @@
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Icon=Icon\chili.ico
+#AutoIt3Wrapper_Outfile=Vectoring_Helper.exe
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+#include <StaticConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <EditConstants.au3>
+#include <Constants.au3>
+#include <WinAPI.au3>
+#include <String.au3>
+#include <Array.au3>
+
+Opt("TrayAutoPause", 0)
+Opt("TrayMenuMode", 3)
+Opt("WinTitleMatchMode", 2)
+Opt("TrayOnEventMode", 1)
+
+; ====================
+; === GUI CREATION ===
+; ====================
+
+$gGuiMain = GUICreate("Vectoring Helper", 600, 600)
+
+$gEditBox = GUICtrlCreateEdit("",10, 50, 580, 550)
+GUICtrlSetLimit($gEditBox, 5000000)
+
+$gButtonPaste = GUICtrlCreateButton("Paste from clipboard", 50, 20, 110, 25)
+
+$gButtonMagic = GUICtrlCreateButton("Perform science", 170, 20, 110,25)
+
+$gButtonCopy = GUICtrlCreateButton("Copy to clipboard", 290, 20, 110, 25)
+
+$gButtonClearEdit = GUICtrlCreateButton("Clear text", 410, 20, 110, 25)
+
+$gButtonInfo = GUICtrlCreateButton("@", 570, 10, 20, 20)
+
+GUISetState(@SW_SHOW)
+
+; =================
+; === MAIN LOOP ===
+; =================
+
+While 1
+	$msg = GUIGetMsg()
+	Select
+		Case $msg = $gButtonMagic
+			_ClearText()
+
+		Case $msg = $gButtonPaste
+			_Paste()
+
+		Case $msg = $gButtonCopy
+			_Copy()
+
+		Case $msg = $gButtonClearEdit
+			GUICtrlSetData($gEditBox,"")
+
+		Case $msg = $gButtonInfo
+			_Credits()
+
+		Case $msg = $GUI_EVENT_CLOSE
+			ExitLoop
+			Exit 0
+	EndSelect
+WEnd
+
+; =================
+; === FUNCTIONS ===
+; =================
+
+Func _Copy()
+	Local $sText = GUICtrlRead($gEditBox)
+	ClipPut($sText)
+EndFunc
+
+Func _Paste()
+	Local $sText = ClipGet()
+	GUICtrlSetData($gEditBox, $sText)
+EndFunc
+
+Func _ClearText() ; === Clearing function
+	Local $sTempText = ""
+	Local $sText = GUICtrlRead($gEditBox)
+	$sText = StringSplit($sText,@CR)
+		For $i = 1 to $sText[0]
+			$sTextRow = StringSplit($sText[$i]," ")
+			If $sTextRow[0] > 2 Then
+				$sTextRow[1] = StringStripWS($sTextRow[1], $STR_STRIPLEADING + $STR_STRIPTRAILING + $STR_STRIPSPACES)
+				If $sTextRow[5] <> "VDSL" And $sTextRow[5] <> "ADSL" And $sTextRow[5] <> "VVDSL" And $sTextRow[5] <> "UNKNOWN" And $sTextRow[1] <> "VVDSL" And $sTextRow[1] <> "ADSL" Then
+					$sTempText = $sTempText & $sTextRow[1] & @CRLF
+				EndIf
+			EndIf
+		Next
+	GUICtrlSetData($gEditBox,$sTempText)
+EndFunc
+
+Func _Credits()
+	MsgBox(0, "Credits", "" & @CRLF & _
+			"     /|" & @CRLF & _
+			"  .-((--. " & @CRLF & _
+			" ( '`^'; )" & @CRLF & _
+			" `;#    |" & @CRLF & _
+			"   \#    |" & @CRLF & _
+			"    \#   \ " & @CRLF & _
+            "       '-.  ) " & @CRLF & _
+			"         \(  Red Hot Chili Vectoring Helper v1.1" & @CRLF & @CRLF & _
+			"	Bartosz Idkowiak @ Alcatel-Lucent 2015" & @CRLF & @CRLF & _
+			"	")
+EndFunc

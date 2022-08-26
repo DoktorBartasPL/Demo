@@ -1,0 +1,172 @@
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Icon=Icon\monkey.ico
+#AutoIt3Wrapper_Outfile=Dysnomia Planned Maintenance Helper.exe
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+;Dysnomia 1.0
+
+; === IMPORTS ===
+#include <GUIConstantsEx.au3>
+#include <GuiRichEdit.au3>
+#include <WindowsConstants.au3>
+#include <GuiEdit.au3>
+#include <StaticConstants.au3>
+#include <ComboConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <Date.au3>
+#include <EditConstants.au3>
+#include <Constants.au3>
+#include <WinAPI.au3>
+#include <File.au3>
+#include <Array.au3>
+#include <Restart.au3>
+#include <GUIComboBox.au3>
+#include <FileConstants.au3>
+#include <MsgBoxConstants.au3>
+
+; === CREATE GUI ===
+GUICreate("Dysnomia Planned Maintenance Helper", 600, 600)
+
+GUICtrlCreateGroup("Control Panel", 10, 10, 580, 160)
+$gEditLogs = GUICtrlCreateEdit("Logs go here...", 400, 25, 185, 140)
+$gButtonSearchCircuits = GUICtrlCreateButton("Search", 300, 25, 80, 80)
+$gButtonLoadFile = GUICtrlCreateButton("Load file", 25, 25, 100, 25)
+$gCheckboxAutoCleanText = GUICtrlCreateCheckbox("Auto clean text", 300, 110)
+GUICtrlSetState($gCheckboxAutoCleanText, $GUI_CHECKED)
+$gCheckboxMarkSupported = GUICtrlCreateCheckbox("Mark supported", 300, 130)
+GUICtrlSetState($gCheckboxMarkSupported, $GUI_DISABLE)
+$gButtonShowSupportedCustomers = GUICtrlCreateButton("Show supp. cust.", 25, 60, 100, 25)
+
+GUICtrlCreateGroup("Text Controls", 10, 162, 580, 430)
+
+GUICtrlCreateLabel("Circuit data", 15, 190)
+$gLabelCount = GUICtrlCreateLabel("Rows checked: ", 100, 190, 300,20)
+GUICtrlCreateLabel("Ticket data", 400, 190)
+$gEditMain = GUICtrlCreateEdit("", 15, 210, 380, 300)
+$gEditTickets = GUICtrlCreateEdit("", 400, 210, 185, 300)
+$gButtonCleanText = GUICtrlCreateButton("Clean text", 25, 530, 100, 25)
+$gButtonEraseText = GUICtrlCreateButton("Erase text", 150, 530, 100, 25)
+
+GUISetState(@SW_SHOW)
+
+_ReadSupportedList()
+_FileChooser()
+
+While 1
+
+	; === BUTTON FUNCTIONS ===
+	$msg = GUIGetMsg()
+	Select
+
+		Case $msg = $GUI_EVENT_CLOSE
+			ExitLoop
+			Exit 0
+
+		Case $msg = $gButtonSearchCircuits
+			_SearchThroughCircuitMaintenance()
+
+		Case $msg = $gButtonLoadFile
+			_FileChooser()
+
+		Case $msg = $gButtonCleanText
+			_CleanText()
+
+		Case $msg = $gButtonEraseText
+			GUICtrlSetData($gEditMain, "")
+
+		Case $msg = $gButtonShowSupportedCustomers
+			_ArrayDisplay($aSupportedList, "Supported customers", "", 32)
+
+	EndSelect
+WEnd
+
+; === FILE CHOOSER FUNCTION ===
+Func _FileChooser()
+	Local $sCSVFilePath = FileOpenDialog("Choose Circuit Inventory CSV file",@ScriptDir, "CSV (*.csv)")
+	_LogUpdater("File selected: " & $sCSVFilePath)
+	Local $sFileName = FileOpen($sCSVFilePath)
+	Local $sFileRead = FileRead($sFileName)
+	Global $aFileResultsRows = StringSplit($sFileRead, @CR)
+	_LogUpdater("File row count: " & $aFileResultsRows[0] & @CRLF & "------")
+EndFunc   ;==>_FileChooser
+
+; === COUNTING PROVIDERS ===
+Func _ReadSupportedList()
+	Local $sFileName = FileOpen(@ScriptDir & "\Supported.csv")
+	Local $sFileRead = FileRead($sFileName)
+	Global $aSupportedList = StringSplit($sFileRead, ";")
+	_LogUpdater("Supported providers count: " & $aSupportedList[0])
+EndFunc
+
+; === SEARCH THROUGH MAINTENANCE FILE ===
+Func _SearchThroughCircuitMaintenance()
+	_AutoCleanText()
+	Local $aCircuitsToSeach = StringSplit(GUICtrlRead($gEditMain),@CR)
+	If $aCircuitsToSeach[$aCircuitsToSeach[0]] = @LF Then
+		_ArrayDelete($aCircuitsToSeach, $aCircuitsToSeach[0])
+		$aCircuitsToSeach[0] = $aCircuitsToSeach[0]-1
+	EndIf
+	Local $sTempText = GUICtrlRead($gEditMain)
+	Local $sNewText = ""
+	Local $aResultsColumns = ""
+	Local $iIsFound = False
+	_LogUpdater("No. of circuits to check: " & $aCircuitsToSeach[0] & @CRLF & "------")
+	For $i = 1 To $aCircuitsToSeach[0]
+		$iIsFound = False
+		_LogUpdater("Looking for: " & $aCircuitsToSeach[$i])
+		For $j = 2 To $aFileResultsRows[0]
+			$aResultsColumns = StringSplit($aFileResultsRows[$j], ";")
+			If StringCompare(StringStripWS($aCircuitsToSeach[$i], 8), StringStripWS($aResultsColumns[2], 8)) = 0 Then
+					If GUICtrlRead($gCheckboxMarkSupported) = $GUI_CHECKED Then
+						For $k = 1 To $aSupportedList[0]
+							If StringCompare(StringStripWS($aSupportedList[$k], 8), StringStripWS($aResultsColumns[2], 8)) = 0 Then
+								$sNewText = $sNewText & $aResultsColumns[2] & " - " & $aResultsColumns[5] & " - circuit SUPPORTED" & @CRLF
+								ExitLoop
+							EndIf
+						Next
+					Else
+						$sNewText = $sNewText & $aResultsColumns[2] & "  ---  " & $aResultsColumns[5] & @CRLF
+					EndIf
+					GUICtrlSetData($gEditMain, $sNewText)
+					$iIsFound = True
+					ExitLoop(1)
+			EndIf
+		Next
+		If $iIsFound <> True Then
+			$sNewText = $sNewText & $aCircuitsToSeach[$i] & "  ---  CIRCUIT NOT FOUND/TYPO ERROR" & @CRLF
+			GUICtrlSetData($gEditMain, $sNewText)
+		EndIf
+	Next
+	_LogUpdater("Finished." & @CRLF & "------")
+EndFunc
+
+; === AUTOMATIC CLEANUP ORDER ===
+Func _AutoCleanText()
+	If GUICtrlRead($gCheckboxAutoCleanText) = $GUI_CHECKED Then _CleanText()
+EndFunc
+
+; === REMOVE BLANK SPACES ===
+Func _CleanText() ; === Cleaning function
+	Local $sText = GUICtrlRead($gEditMain)
+	$sText = StringReplace($sText, @CRLF & @CRLF, @CRLF)
+	GUICtrlSetData($gEditMain, $sText)
+EndFunc   ;==>
+
+; === REMOVE BLANK FIELDS ===
+Func _ArryRemoveBlanks(ByRef $arr)
+  $idx = 0
+  For $i = 0 To UBound($arr) - 1
+    If $arr[$i] <> "" Then
+      $arr[$idx] = $arr[$i]
+      $idx += 1
+    EndIf
+  Next
+  ReDim $arr[$idx]
+EndFunc ;==>_ArryRemoveBlanks
+
+; === BASIC LOG UPDATE FUNCTION ===
+Func _LogUpdater($sAddedText)
+	Local $sTempText = GUICtrlRead($gEditLogs)
+	$sTempText = $sTempText & @CRLF & $sAddedText
+	GUICtrlSetData($gEditLogs, $sTempText)
+	_GUICtrlEdit_LineScroll($gEditLogs, 0, _GUICtrlEdit_GetLineCount($gEditLogs))
+EndFunc

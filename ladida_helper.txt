@@ -1,0 +1,928 @@
+#NoTrayIcon
+#region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Icon=Icon\1414375165_103173.ico
+#AutoIt3Wrapper_Outfile=Ladida_Helper.exe
+#AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
+#AutoIt3Wrapper_Run_Au3Stripper=y
+#Au3Stripper_Parameters=/cs 1 /cn 1
+#endregion ;**** Directives created by AutoIt3Wrapper_GUI ****
+
+; ===========================================
+; === LADIDA HELPER BARTOSZ IDKOWIAK 2015 ===
+; ===========================================
+
+#include <GuiEdit.au3>
+#include <StaticConstants.au3>
+#include <ComboConstants.au3>
+#include <GUIConstantsEx.au3>
+#include <Date.au3>
+#include <EditConstants.au3>
+#include <Constants.au3>
+#include <WinAPI.au3>
+#include <String.au3>
+#include <File.au3>
+#include <Array.au3>
+#include <Restart.au3>
+#include <GUIComboBox.au3>
+
+; ===================
+; === APP OPTIONS ===
+; ===================
+
+Opt("TrayAutoPause", 0)
+Opt("TrayMenuMode", 3)
+Opt("WinTitleMatchMode", 2)
+Opt("TrayOnEventMode", 1)
+TraySetOnEvent($TRAY_EVENT_PRIMARYUP, "_MinimizeToTray") ; === Set minimize to tray function
+
+; ===================
+; === APP OPTIONS ===
+; ===================
+
+$impactFormat = ""
+$previewText = ""
+$previewTempText = ""
+$sInputBoxReggefiberNameString = ""
+$sEditBoxRemarksString = ""
+$gInputBoxTicketOneNumber = ""
+$gInputBoxTicketTwoNumber = ""
+$editBox_CardsSummarySorted = ""
+$editBox_AlarmsAMSSorted = ""
+$editBox_CardsSummaryPrev = ""
+
+; ================================
+; === GUI MAIN WINDOW CREATION ===
+; ================================
+
+$gGuiMain = GUICreate("Ladida Helper", 600, 600)
+
+; ============
+; === TABS ===
+; ============
+
+$gTab = GUICtrlCreateTab(0, 0, 600, 600)
+
+; --------------
+; --- LADIDA ---
+; --------------
+
+GUICtrlCreateTabItem("Ladida")
+
+GUICtrlCreateGroup("Entry on Ladida", 5, 30, 590, 565)
+
+GUICtrlCreateLabel("Ticket One number:", 10, 50)
+
+$gInputBoxTicketOneNumber = GUICtrlCreateInput("", 110, 48, 80)
+GUICtrlSetLimit($gInputBoxTicketOneNumber, 8)
+
+GUICtrlCreateLabel("Ticket Two number:", 200, 50)
+
+$gInputBoxTicketTwoNumber = GUICtrlCreateInput("", 300, 48, 80)
+GUICtrlSetLimit($gInputBoxTicketTwoNumber, 8)
+
+GUICtrlCreateLabel("Ladida output:", 10, 90)
+
+$gEditBoxLadidaSummary = GUICtrlCreateEdit("", 10, 110, 580, 475)
+
+$gButtonHelpLadida = GUICtrlCreateButton("?", 570, 40, 20)
+
+; -----------------
+; --- TICKET #1 ---
+; -----------------
+
+GUICtrlCreateTabItem("Ticket #1 ")
+
+GUICtrlCreateGroup("Ticket #1 summary", 5, 30, 590, 565)
+
+$gLabelTicketOneNumber = GUICtrlCreateLabel("Ticket One number: ", 10, 50, 150)
+
+$gInputBoxTicketOneNumberAdditional = GUICtrlCreateInput("", 110, 48, 80, 21, $ES_READONLY)
+GUICtrlSetLimit($gInputBoxTicketOneNumberAdditional, 8)
+
+GUICtrlCreateLabel("SLA:", 10, 80)
+
+$gInputBoxTicketOneSLA = GUICtrlCreateInput("4", 40, 78, 30)
+
+GUICtrlCreateLabel("hours", 80, 80)
+
+GUICtrlCreateLabel("Ticket logging:", 10, 110)
+
+$editBox_TicketOneLogging = GUICtrlCreateEdit("", 10, 130, 580, 200)
+
+GUICtrlCreateLabel("Ticket t-data:", 10, 340)
+
+$gEditBoxTicketOneTData = GUICtrlCreateEdit("No t-data in the ticket.", 10, 360, 580, 200)
+
+$gButtonHelpTicket1 = GUICtrlCreateButton("?", 570, 40, 20)
+
+; -----------------
+; --- TICKET #2 ---
+; -----------------
+
+GUICtrlCreateTabItem("Ticket #2")
+
+GUICtrlCreateGroup("Ticket #2 summary", 5, 30, 590, 565)
+
+$gLabelTicketTwoNumber = GUICtrlCreateLabel("Ticket Two number: ", 10, 50, 150)
+
+$gInputBoxTicketTwoNumberAdditional = GUICtrlCreateInput("", 110, 48, 80, 21, $ES_READONLY)
+
+GUICtrlSetLimit($gInputBoxTicketTwoNumberAdditional, 8)
+
+GUICtrlCreateLabel("SLA:", 10, 80)
+
+$gInputBoxTicketTwoSLA = GUICtrlCreateInput("4", 40, 78, 30)
+
+GUICtrlCreateLabel("hours", 80, 80)
+
+GUICtrlCreateLabel("Ticket logging:", 10, 110)
+
+$editBox_TicketTwoLogging = GUICtrlCreateEdit("", 10, 130, 580, 200)
+
+GUICtrlCreateLabel("Ticket t-data:", 10, 340)
+
+$editBox_TicketTwoTData = GUICtrlCreateEdit("No t-data in the ticket.", 10, 360, 580, 200)
+
+$buttonHelpTicket2 = GUICtrlCreateButton("?", 570, 40, 20)
+
+
+; ------------------
+; --- CONCLUSION ---
+; ------------------
+
+
+GUICtrlCreateTabItem("Conclusion")
+
+GUICtrlCreateGroup("Remarks", 5, 205, 590, 390)
+
+GUICtrlCreateGroup("Conclusion", 5, 30, 590, 565)
+
+GUICtrlCreateLabel("Cause:", 10, 50)
+
+$inputBox_Cause = GUICtrlCreateInput("Resource Isolation", 50, 48, 170)
+
+GUICtrlCreateLabel(" in", 225, 50)
+
+Global $SCCOBRArray[3] = ["SC", "CO", "BR"]
+
+$SCCOBRList = ""
+For $i = 0 To UBound($SCCOBRArray) - 1
+	$SCCOBRList &= "|" & $SCCOBRArray[$i]
+Next
+
+$combo_SCCOBRType = GUICtrlCreateCombo("", 245, 48, 50)
+
+GUICtrlSetData($combo_SCCOBRType, $SCCOBRList)
+
+_GUICtrlComboBox_SetCurSel($combo_SCCOBRType, 0)
+
+GUICtrlCreateGroup("Import info from database", 320, 30, 170, 75)
+
+$buttonInstallBase = GUICtrlCreateButton("Import", 355, 50, 100)
+
+GUICtrlCreateLabel("*(Reggefiber location: ", 10, 80)
+
+$inputBox_ReggefiberName = GUICtrlCreateInput("", 120, 78, 100)
+
+GUICtrlCreateLabel(")*    in DSLAM   ->", 230, 80)
+
+$inputBox_DSLAMName = GUICtrlCreateInput("", 330, 78, 150)
+
+GUICtrlSetBkColor($inputBox_DSLAMName, 0xFFFF99)
+
+$buttonDSLAMtoImpact = GUICtrlCreateButton("<- Set as impact", 500, 76)
+
+GUICtrlCreateLabel("    Reason for outage:", 10, 110)
+
+$inputBox_ReasonForOutage = GUICtrlCreateInput("", 120, 108, 370)
+
+GUICtrlCreateLabel("                       Impact:", 10, 140)
+
+$editBox_Impact = GUICtrlCreateEdit("", 120, 138, 185, 65)
+
+GUICtrlCreateLabel("City:", 315, 140)
+
+$inputBox_City = GUICtrlCreateInput("", 340, 138, 150)
+
+$editBox_Remarks = GUICtrlCreateEdit("", 10, 225, 580, 200)
+
+$buttonHelpConclusion = GUICtrlCreateButton("?", 570, 40, 20)
+
+
+; ----------------
+; --- AMS DATA ---
+; ----------------
+
+
+GUICtrlCreateTabItem("AMS data")
+
+GUICtrlCreateGroup("AMS data", 5, 30, 590, 565)
+
+GUICtrlCreateLabel("        NE Type/Release:", 10, 50)
+
+Global $TypeArray[7] = ["", "7302 ISAM R4.4", "7302 ISAM R5.1", "7330 ISAM R4.4", "7301 ASAM GENT R5.1.60", "7300 ASAM GENT R5.1.60", "7363 ISAM-MX R5.1"]
+
+$TypeList = ""
+For $i = 0 To UBound($TypeArray) - 1
+	$TypeList &= "|" & $TypeArray[$i]
+Next
+
+$combo_DSLAMType = GUICtrlCreateCombo("", 130, 48, 200)
+
+GUICtrlSetData($combo_DSLAMType, $TypeList)
+
+_GUICtrlComboBox_SetCurSel($combo_DSLAMType, 0)
+
+GUICtrlCreateLabel("Active software version:", 10, 80)
+
+$inputBox_DSLAMSoftwareVersion = GUICtrlCreateInput("", 130, 78, 200, 20)
+
+GUICtrlCreateGroup("Select DSLAM type", 340, 30, 170, 75)
+
+$radio_ISAM = GUICtrlCreateRadio("ISAM", 360, 60, 50)
+
+$radio_ASAM = GUICtrlCreateRadio("ASAM", 440, 60, 50)
+
+GUICtrlSetState($radio_ISAM, $GUI_CHECKED)
+
+GUICtrlCreateGroup("", 5, 97, 590, 498)
+
+$label_CardsSummary = GUICtrlCreateLabel("Cards summary:", 10, 110)
+
+$gCheckboxCardStatusCopy = GUICtrlCreateCheckbox("Use AMS Table View info from clipboard", 130, 107)
+
+$label_RowNumber = GUICtrlCreateLabel("Row count: ", 370, 110, 200)
+
+$label_CardSummaryElements = GUICtrlCreateLabel("NANT" & @CRLF & "01___" & @CRLF & "02___" & @CRLF & "03___" & @CRLF & "04___" & @CRLF & "05___" & @CRLF & "06___" & @CRLF & "07___" & @CRLF & _
+		"08___" & @CRLF & "09___" & @CRLF & "10___" & @CRLF & "11___" & @CRLF & "12___" & @CRLF & "13___" & @CRLF & "14___" & @CRLF & "15___" & @CRLF & "16___" & @CRLF & "17___" & @CRLF & "18___", 42, 133)
+
+$label_CardSummaryElementsAdditional = GUICtrlCreateLabel(" NTA /" & @CRLF & @CRLF & @CRLF & @CRLF & @CRLF & @CRLF & @CRLF & @CRLF & @CRLF & @CRLF & @CRLF & @CRLF & @CRLF & @CRLF & @CRLF & @CRLF & @CRLF & "NTIO /" & @CRLF & " NTB /", 10, 133)
+
+$editBox_CardsSummary = GUICtrlCreateEdit("", 75, 130, 515, 280)
+
+$label_NodeUptime = GUICtrlCreateLabel("ASAM node uptime:", 10, 110)
+
+GUICtrlSetState($label_NodeUptime, 32)
+
+$inputBox_NodeUptime = GUICtrlCreateInput("", 130, 108, 200)
+
+GUICtrlSetState($inputBox_NodeUptime, 32)
+
+GUICtrlCreateLabel("AMS alarms:", 10, 415)
+
+$editBox_AMSAlarms = GUICtrlCreateEdit("", 10, 430, 580, 160)
+
+GUICtrlSetLimit($editBox_AMSAlarms, 250000)
+
+$buttonHelpAMS = GUICtrlCreateButton("?", 570, 40, 20)
+
+
+; ---------------
+; --- PREVIEW ---
+; ---------------
+
+
+GUICtrlCreateTabItem("Report preview and filesave")
+
+GUICtrlCreateGroup("Preview", 5, 137, 590, 458)
+
+GUICtrlCreateGroup("Generate report preview", 5, 30, 590, 565)
+
+$buttonGeneratePreview = GUICtrlCreateButton("Generate preview", 30, 50, 100, 30)
+
+GUICtrlCreateGroup("Filesave", 150, 30, 200, 115)
+
+$buttonSaveFile = GUICtrlCreateButton("Save file", 205, 50, 100, 30)
+
+$checkbox_CreateDirectory = GUICtrlCreateCheckbox("Create file in Week " & _WeekNumberISO() & " directory", 165, 82)
+
+$checkbox_DeleteTemp = GUICtrlCreateCheckbox("Delete temp report", 165, 102)
+
+GUICtrlCreateGroup("Reset program", 348, 30, 200, 115)
+
+$buttonClearProgram = GUICtrlCreateButton("Clear entries -> New report", 375, 50, 150, 30)
+
+GUICtrlSetState($buttonSaveFile, $GUI_DISABLE)
+
+$editBox_Preview = GUICtrlCreateEdit("", 10, 160, 580, 425)
+
+$buttonHelpPreview = GUICtrlCreateButton("?", 570, 40, 20)
+
+$buttonCredits = GUICtrlCreateButton("@", 570, 70, 20)
+
+
+; ================
+; === SHOW GUI ===
+; ================
+
+
+GUISetState(@SW_SHOW)
+
+
+; =================
+; === MAIN LOOP ===
+; =================
+
+
+While 1
+
+	If GUICtrlRead($editBox_CardsSummary) <> $editBox_CardsSummaryPrev And GUICtrlRead($gTab) = 4 Then
+		_CountRows()
+		$editBox_CardsSummaryPrev = GUICtrlRead($editBox_CardsSummary)
+	EndIf
+
+
+	; === BUTTON FUNCTIONS ===
+	$msg = GUIGetMsg()
+	Select
+
+		; === CREATE PREVIEW ===
+		Case $msg = $buttonGeneratePreview
+			_CreatePreview()
+			GUICtrlSetState($buttonSaveFile, $GUI_ENABLE)
+
+			; === SAVE FILES ===
+		Case $msg = $buttonSaveFile
+			_CreateFile()
+
+			; === CLEAR ENTRIES ===
+		Case $msg = $buttonClearProgram
+			_Restart()
+
+			; === CLEAR ENTRIES ===
+		Case $msg = $buttonInstallBase
+			_ImportDataInstallBase()
+
+			; === SET DSLAM AS ISAM ===
+		Case $msg = $radio_ISAM
+			_CheckISAM()
+
+			; === SET DSLAM AS ASAM ===
+		Case $msg = $radio_ASAM
+			_CheckASAM()
+
+			; === SET DSLAM AS IMPACT ===
+		Case $msg = $buttonDSLAMtoImpact
+			GUICtrlSetData($editBox_Impact, GUICtrlRead($inputBox_DSLAMName))
+
+			; === TAB ACTIONS ===
+		Case $msg = $gTab
+			If GUICtrlRead($gTab) = 1 Then GUICtrlSetData($gInputBoxTicketOneNumberAdditional, GUICtrlRead($gInputBoxTicketOneNumber))
+			If GUICtrlRead($gTab) = 2 Then GUICtrlSetData($gInputBoxTicketTwoNumberAdditional, GUICtrlRead($gInputBoxTicketTwoNumber))
+			_CreateTempPreview()
+
+			; === CLOSE THE GUI (X BUTTON) ===
+		Case $msg = $GUI_EVENT_CLOSE
+			ExitLoop
+			Exit 0
+
+			; === DISPLAY CREDITS ===
+		Case $msg = $buttonCredits
+			_Credits()
+
+			; === DISPLAY HELP LADIDA ===
+		Case $msg = $gButtonHelpLadida
+			_HelpBoxLadida()
+
+			; === DISPLAY HELP TICKET 1 ===
+		Case $msg = $gButtonHelpTicket1
+			_HelpBoxTicket1()
+
+			; === DISPLAY HELP TICKET 2 ===
+		Case $msg = $buttonHelpTicket2
+			_HelpBoxTicket2()
+
+			; === DISPLAY HELP CONCLUSION ===
+		Case $msg = $buttonHelpConclusion
+			_HelpBoxConclusion()
+
+			; === DISPLAY HELP AMS ===
+		Case $msg = $buttonHelpAMS
+			_HelpBoxAMS()
+			_CountRows()
+
+			; === DISPLAY HELP PREVIEW ===
+		Case $msg = $buttonHelpPreview
+			_HelpBoxPreview()
+
+	EndSelect
+
+WEnd
+
+
+; =================
+; === FUNCTIONS ===
+; =================
+
+; ------------------------
+; --- SET VIEW TO ISAM ---
+; ------------------------
+
+Func _CheckISAM()
+	GUICtrlSetState($editBox_CardsSummary, 16)
+	GUICtrlSetState($label_CardsSummary, 16)
+	GUICtrlSetState($label_CardSummaryElements, 16)
+	GUICtrlSetState($label_CardSummaryElementsAdditional, 16)
+	GUICtrlSetState($gCheckboxCardStatusCopy, 16)
+	GUICtrlSetState($label_RowNumber, 16)
+	GUICtrlSetState($label_NodeUptime, 32)
+	GUICtrlSetState($inputBox_NodeUptime, 32)
+	;GUICtrlSetData($combo_DSLAMType, "7302 ISAM R4.4")
+EndFunc   ;==>CheckISAM
+
+; ------------------------
+; --- SET VIEW TO ASAM ---
+; ------------------------
+
+Func _CheckASAM()
+	GUICtrlSetState($editBox_CardsSummary, 32)
+	GUICtrlSetState($label_CardsSummary, 32)
+	GUICtrlSetState($label_CardSummaryElements, 32)
+	GUICtrlSetState($label_CardSummaryElementsAdditional, 32)
+	GUICtrlSetState($gCheckboxCardStatusCopy, 32)
+	GUICtrlSetState($label_RowNumber, 32)
+	GUICtrlSetState($label_NodeUptime, 16)
+	GUICtrlSetState($inputBox_NodeUptime, 16)
+	;GUICtrlSetData($combo_DSLAMType, "7301 ASAM GENT R5.1.60")
+EndFunc   ;==>CheckASAM
+
+; ---------------------------------
+; --- IMPORT DATA FROM DATABASE ---
+; ---------------------------------
+
+Func _ImportDataInstallBase()
+
+	Local $fileName = FileOpen(@ScriptDir & "\Install_Base_DSL.csv")
+	Local $fileRead = FileRead($fileName)
+	Local $resultsRows = StringSplit($fileRead, @CR)
+	Local $isFound = 0
+
+	For $i = 2 To $resultsRows[0] - 1
+
+		$resultsColumns = StringSplit($resultsRows[$i], ";")
+
+		If StringStripWS($resultsColumns[1], $STR_STRIPLEADING + $STR_STRIPTRAILING + $STR_STRIPSPACES) = GUICtrlRead($inputBox_DSLAMName) Then
+			$isFound = 1
+			GUICtrlSetData($inputBox_ReggefiberName, $resultsColumns[21])
+			GUICtrlSetData($inputBox_ReggefiberName, $resultsColumns[21])
+
+			If $resultsColumns[15] <> "" Then
+				GUICtrlSetData($inputBox_City, $resultsColumns[15])
+			Else
+				GUICtrlSetData($inputBox_City, $resultsColumns[33])
+			EndIf
+
+			If $resultsColumns[2] = "ISAM 7302" Then
+				_CheckISAM()
+				GUICtrlSetState($radio_ISAM, $GUI_CHECKED)
+				GUICtrlSetData($combo_DSLAMType, "7302 ISAM R5.1")
+			ElseIf $resultsColumns[2] = "ISAM 7330" Then
+				_CheckISAM()
+				GUICtrlSetState($radio_ISAM, $GUI_CHECKED)
+				GUICtrlSetData($combo_DSLAMType, "7330 ISAM R4.4")
+			ElseIf $resultsColumns[2] = "ISAM-MX 7363" Then
+				_CheckISAM()
+				GUICtrlSetState($radio_ISAM, $GUI_CHECKED)
+				GUICtrlSetData($combo_DSLAMType, "7363 ISAM-MX R5.1")
+			ElseIf $resultsColumns[2] = "ASAM 7300" Then
+				_CheckASAM()
+				GUICtrlSetState($radio_ISAM, $GUI_CHECKED)
+				GUICtrlSetData($combo_DSLAMType, "7301 ASAM GENT R5.1.60")
+			Else
+				_CheckASAM()
+				GUICtrlSetState($radio_ASAM, $GUI_CHECKED)
+				GUICtrlSetData($combo_DSLAMType, "7301 ASAM GENT R5.1.60")
+			EndIf
+
+			If $resultsColumns[5] <> "" Then
+				If $resultsColumns[5] = "SCS-B" Then
+					GUICtrlSetData($combo_SCCOBRType, "BR")
+				Else
+					GUICtrlSetData($combo_SCCOBRType, "SC")
+				EndIf
+			Else
+				GUICtrlSetData($combo_SCCOBRType, "CO")
+			EndIf
+		EndIf
+	Next
+
+	If $isFound = 0 Then
+		MsgBox($MB_ICONERROR, "Error", "DSLAM " & GUICtrlRead($inputBox_DSLAMName) & " not found.")
+		GUICtrlSetData($inputBox_ReggefiberName, "")
+		GUICtrlSetData($inputBox_City, "")
+	EndIf
+EndFunc   ;==>ImportDataInstallBase
+
+; -------------------
+; --- ROW COUNTER ---
+; -------------------
+
+Func _CountRows()
+	If _GUICtrlEdit_GetLineCount($editBox_CardsSummary) = 20 Then
+		GUICtrlSetData($label_RowNumber, "Row count: " & _GUICtrlEdit_GetLineCount($editBox_CardsSummary))
+		GUICtrlSetColor($label_RowNumber, 0x00CC00)
+	Else
+		GUICtrlSetData($label_RowNumber, "Row count: " & _GUICtrlEdit_GetLineCount($editBox_CardsSummary))
+		GUICtrlSetColor($label_RowNumber, 0xFF0000)
+	EndIf
+EndFunc   ;==>CountRows
+
+; -------------------
+; --- CREATE FILE ---
+; -------------------
+
+Func _CreateFile()
+
+	If GUICtrlRead($checkbox_CreateDirectory) = $GUI_CHECKED Then
+		DirCreate(@ScriptDir & "\Week " & _WeekNumberISO() & "\")
+		Local $fileName = FileOpen(@ScriptDir & "\Week " & _WeekNumberISO() & "\" & GUICtrlRead($gInputBoxTicketOneNumber) & "_" & GUICtrlRead($gInputBoxTicketTwoNumber) & ".txt", 2)
+	Else
+		Local $fileName = FileOpen(@ScriptDir & "\" & GUICtrlRead($gInputBoxTicketOneNumber) & "_" & GUICtrlRead($gInputBoxTicketTwoNumber) & ".txt", 2)
+	EndIf
+
+	FileWrite($fileName, GUICtrlRead($editBox_Preview))
+	FileClose($fileName)
+
+	If GUICtrlRead($checkbox_DeleteTemp) = $GUI_CHECKED Then
+		FileDelete(@ScriptDir & "\_TEMP_.txt")
+	EndIf
+
+EndFunc   ;==>CreateFile
+
+; -------------------------
+; --- CLEAR ALL ENTRIES ---
+; -------------------------
+
+Func _Restart()
+
+	If @Compiled Then
+		Run(FileGetShortName(@ScriptFullPath))
+	Else
+		Run(FileGetShortName(@AutoItExe) & " " & FileGetShortName(@ScriptFullPath))
+	EndIf
+	Exit
+
+EndFunc   ;==>Restart
+
+; ----------------------------------
+; --- CREATE TEMP PREVIEW REPORT ---
+; ----------------------------------
+
+Func _CreateTempPreview()
+
+	Local $fileName = FileOpen(@ScriptDir & "\_TEMP_.txt", 2)
+
+	If GUICtrlRead($inputBox_ReggefiberName) == "" Then
+		$sInputBoxReggefiberNameString = ""
+	Else
+		$sInputBoxReggefiberNameString = " (Reggefiber location: " & GUICtrlRead($inputBox_ReggefiberName) & ")"
+	EndIf
+
+	If GUICtrlRead($editBox_Remarks) == "" Then
+		$sEditBoxRemarksString = ""
+	Else
+		$sEditBoxRemarksString = @CRLF & @CRLF & "Remarks:" & @CRLF & GUICtrlRead($editBox_Remarks)
+	EndIf
+
+	_AlarmsDelimiter()
+	_FormatImpact()
+
+	$previewTextLadida = GUICtrlRead($gEditBoxLadidaSummary)
+
+	$previewTextTicketOne = "==============================" & @CRLF & "ANALYSE Ticket-1		" & GUICtrlRead($gInputBoxTicketOneNumber) & " SLA: " & GUICtrlRead($gInputBoxTicketOneSLA) & _
+			" uur " & @CRLF & "==============================" & @CRLF & @CRLF & GUICtrlRead($editBox_TicketOneLogging) & @CRLF & @CRLF & @CRLF & "==============================" & _
+			@CRLF & "T-DATA Ticket-1		" & GUICtrlRead($gInputBoxTicketOneNumber) & " SLA: " & GUICtrlRead($gInputBoxTicketOneSLA) & " uur " & @CRLF & "==============================" & @CRLF & @CRLF & GUICtrlRead($gEditBoxTicketOneTData)
+
+	$previewTextTicketTwo = "==============================" & @CRLF & "ANALYSE Ticket-2		" & GUICtrlRead($gInputBoxTicketTwoNumber) & " SLA: " & GUICtrlRead($gInputBoxTicketTwoSLA) & _
+			" uur " & @CRLF & "==============================" & @CRLF & @CRLF & GUICtrlRead($editBox_TicketTwoLogging) & @CRLF & @CRLF & @CRLF & "==============================" & _
+			@CRLF & "T-DATA Ticket-2		" & GUICtrlRead($gInputBoxTicketTwoNumber) & " SLA: " & GUICtrlRead($gInputBoxTicketTwoSLA) & " uur " & @CRLF & "==============================" & @CRLF & @CRLF & GUICtrlRead($editBox_TicketTwoTData)
+
+	If GUICtrlRead($radio_ISAM) = $GUI_CHECKED Then
+		$previewTextAMS = "==============================" & @CRLF & "AMS DATA" & @CRLF & "==============================" & @CRLF & @CRLF & "		NE Type/Release: " & GUICtrlRead($combo_DSLAMType) & _
+				@CRLF & "Active Software Version: " & GUICtrlRead($inputBox_DSLAMSoftwareVersion) & @CRLF & @CRLF & @CRLF & "Card 	Last Reset Time" & @CRLF & "====	===============" & @CRLF & _
+				@CRLF & @CRLF & @CRLF & "Network alarms:" & @CRLF & @CRLF & $editBox_AlarmsAMSSorted
+	Else
+		$previewTextAMS = "==============================" & @CRLF & "AMS DATA" & @CRLF & "==============================" & @CRLF & @CRLF & "		NE Type/Release: " & GUICtrlRead($combo_DSLAMType) & _
+				@CRLF & "Active Software Version: " & GUICtrlRead($inputBox_DSLAMSoftwareVersion) & @CRLF & @CRLF & @CRLF & "ASAM node uptime: " & GUICtrlRead($inputBox_NodeUptime) & _
+				@CRLF & @CRLF & @CRLF & "Network alarms:" & @CRLF & @CRLF & $editBox_AlarmsAMSSorted
+	EndIf
+
+	$previewTextConclusion = "==============================" & @CRLF & "CONCLUSIE" & @CRLF & "==============================" & @CRLF & @CRLF & " Cause: " & GUICtrlRead($inputBox_Cause) & _
+			" in " & GUICtrlRead($combo_SCCOBRType) & $sInputBoxReggefiberNameString & " DSLAM: " & GUICtrlRead($inputBox_DSLAMName) & ". " & GUICtrlRead($inputBox_ReasonForOutage) & _
+			@CRLF & "Impact: " & $impactFormat & " (" & GUICtrlRead($inputBox_City) & ")" & $sEditBoxRemarksString
+
+	$previewTempText = $previewTextLadida & @CRLF & @CRLF & @CRLF & $previewTextTicketOne & @CRLF & @CRLF & @CRLF & $previewTextTicketTwo & @CRLF & @CRLF & @CRLF & $previewTextAMS & @CRLF & @CRLF & @CRLF & $previewTextConclusion & @CRLF
+
+	FileWrite($fileName, $previewTempText)
+	FileClose($fileName)
+
+EndFunc   ;==>CreateTempPreview
+
+; -----------------------------
+; --- CREATE PREVIEW REPORT ---
+; -----------------------------
+
+Func _CreatePreview()
+
+	If GUICtrlRead($inputBox_ReggefiberName) == "" Then
+		$sInputBoxReggefiberNameString = ""
+	Else
+		$sInputBoxReggefiberNameString = " (Reggefiber location: " & GUICtrlRead($inputBox_ReggefiberName) & ")"
+	EndIf
+
+	If GUICtrlRead($editBox_Remarks) == "" Then
+		$sEditBoxRemarksString = ""
+	Else
+		$sEditBoxRemarksString = @CRLF & @CRLF & "Remarks:" & @CRLF & GUICtrlRead($editBox_Remarks)
+	EndIf
+
+	If GUICtrlRead($radio_ISAM) = 1 Then
+		If GUICtrlRead($gCheckboxCardStatusCopy) == 1 Then
+			_CardSortFromCopy()
+		Else
+			_CardUptimeSort()
+		EndIf
+	EndIf
+
+	_AlarmsDelimiter()
+	_FormatImpact()
+
+	$previewTextLadida = GUICtrlRead($gEditBoxLadidaSummary)
+
+	$previewTextTicketOne = "==============================" & @CRLF & "ANALYSE Ticket-1		" & GUICtrlRead($gInputBoxTicketOneNumber) & " SLA: " & GUICtrlRead($gInputBoxTicketOneSLA) & _
+			" uur " & @CRLF & "==============================" & @CRLF & @CRLF & GUICtrlRead($editBox_TicketOneLogging) & @CRLF & @CRLF & @CRLF & "==============================" & _
+			@CRLF & "T-DATA Ticket-1		" & GUICtrlRead($gInputBoxTicketOneNumber) & " SLA: " & GUICtrlRead($gInputBoxTicketOneSLA) & " uur " & @CRLF & "==============================" & @CRLF & @CRLF & GUICtrlRead($gEditBoxTicketOneTData)
+
+	$previewTextTicketTwo = "==============================" & @CRLF & "ANALYSE Ticket-2		" & GUICtrlRead($gInputBoxTicketTwoNumber) & " SLA: " & GUICtrlRead($gInputBoxTicketTwoSLA) & _
+			" uur " & @CRLF & "==============================" & @CRLF & @CRLF & GUICtrlRead($editBox_TicketTwoLogging) & @CRLF & @CRLF & @CRLF & "==============================" & _
+			@CRLF & "T-DATA Ticket-2		" & GUICtrlRead($gInputBoxTicketTwoNumber) & " SLA: " & GUICtrlRead($gInputBoxTicketTwoSLA) & " uur " & @CRLF & "==============================" & @CRLF & @CRLF & GUICtrlRead($editBox_TicketTwoTData)
+
+	If GUICtrlRead($radio_ISAM) = $GUI_CHECKED Then
+		$previewTextAMS = "==============================" & @CRLF & "AMS DATA" & @CRLF & "==============================" & @CRLF & @CRLF & "		NE Type/Release: " & GUICtrlRead($combo_DSLAMType) & _
+				@CRLF & "Active Software Version: " & GUICtrlRead($inputBox_DSLAMSoftwareVersion) & @CRLF & @CRLF & @CRLF & "Card 	Last Reset Time" & @CRLF & "====	===============" & @CRLF & $editBox_CardsSummarySorted & _
+				@CRLF & @CRLF & @CRLF & "Network alarms:" & @CRLF & @CRLF & $editBox_AlarmsAMSSorted
+	Else
+		$previewTextAMS = "==============================" & @CRLF & "AMS DATA" & @CRLF & "==============================" & @CRLF & @CRLF & "		NE Type/Release: " & GUICtrlRead($combo_DSLAMType) & _
+				@CRLF & "Active Software Version: " & GUICtrlRead($inputBox_DSLAMSoftwareVersion) & @CRLF & @CRLF & @CRLF & "ASAM node uptime: " & GUICtrlRead($inputBox_NodeUptime) & _
+				@CRLF & @CRLF & @CRLF & "Network alarms:" & @CRLF & @CRLF & $editBox_AlarmsAMSSorted
+	EndIf
+
+	$previewTextConclusion = "==============================" & @CRLF & "CONCLUSIE" & @CRLF & "==============================" & @CRLF & @CRLF & " Cause: " & GUICtrlRead($inputBox_Cause) & _
+			" in " & GUICtrlRead($combo_SCCOBRType) & $sInputBoxReggefiberNameString & " DSLAM: " & GUICtrlRead($inputBox_DSLAMName) & ". " & GUICtrlRead($inputBox_ReasonForOutage) & _
+			@CRLF & "Impact: " & $impactFormat & " (" & GUICtrlRead($inputBox_City) & ")" & $sEditBoxRemarksString
+
+	$previewText = $previewTextLadida & @CRLF & @CRLF & @CRLF & $previewTextTicketOne & @CRLF & @CRLF & @CRLF & $previewTextTicketTwo & @CRLF & @CRLF & @CRLF & $previewTextAMS & @CRLF & @CRLF & @CRLF & $previewTextConclusion & @CRLF
+
+	GUICtrlSetData($editBox_Preview, $previewText)
+
+EndFunc   ;==>CreatePreview
+
+; ------------------------------------
+; --- SORT THE PASTED CARD UPTIMES ---
+; ------------------------------------
+
+Func _CardUptimeSort()
+	$editBox_CardsSummarySorted = ""
+	$cardUptimeArray = StringSplit(GUICtrlRead($editBox_CardsSummary), @CR)
+	$editBox_CardsSummarySorted = "NANT-A	" & $cardUptimeArray[1]
+
+	For $i = 1 To $cardUptimeArray[0] - 1
+		$editBox_CardsSummarySorted = $editBox_CardsSummarySorted & @CRLF & "LT" & $i & "	" & $cardUptimeArray[$i + 1]
+	Next
+
+	For $i = $cardUptimeArray[0] To 18
+		$editBox_CardsSummarySorted = $editBox_CardsSummarySorted & @CRLF & "LT" & $i
+	Next
+EndFunc   ;==>CardUptimeSort
+
+; -----------------------------
+; --- CARD UPTIME FROM COPY ---
+; -----------------------------
+
+Func _CardSortFromCopy()
+
+	$editBox_CardsSummarySorted = ""
+
+	Local $tempString = GUICtrlRead($editBox_CardsSummary)
+
+	$tempString = StringReplace($tempString, '"', "")
+	$tempString = StringReplace($tempString, 'Yesterday', 'Yesterday,')
+	$tempString = StringReplace($tempString, 'Today', 'Today,')
+
+	$cardUptimeArray = StringSplit($tempString, @CR)
+
+	Local $lastRestartTimePos = ""
+	Local $availableState = ""
+	Local $detectedType = ""
+	Local $idType = ""
+
+	If GUICtrlRead($editBox_CardsSummary) <> "" And $cardUptimeArray[0] = 20 Then
+
+		For $i = 1 To $cardUptimeArray[0]
+			$cardUptimeArray2 = StringSplit($cardUptimeArray[1], ",")
+			If $cardUptimeArray2[$i] = "Last Restart Time" Then
+				$lastRestartTimePos = $i
+			EndIf
+
+			If $cardUptimeArray2[$i] = "Available State" Then
+				$availableState = $i
+			EndIf
+
+			If $cardUptimeArray2[$i] = "Detected Type" Then
+				$detectedType = $i
+			EndIf
+
+			If $cardUptimeArray2[$i] = "Id" Then
+				$idType = $i
+			EndIf
+		Next
+
+		For $i = 2 To 20
+			$cardUptimeArray2 = StringSplit($cardUptimeArray[$i], ",")
+			If $cardUptimeArray2[$availableState] = "Available" And $cardUptimeArray2[$detectedType] = "NANT-A" Then
+				$editBox_CardsSummarySorted = $editBox_CardsSummarySorted & "NANT-A	" & $cardUptimeArray2[$lastRestartTimePos] & ", " & $cardUptimeArray2[$lastRestartTimePos + 1] & @CRLF
+			EndIf
+		Next
+
+		For $i = 2 To 20
+			$cardUptimeArray2 = StringSplit($cardUptimeArray[$i], ",")
+			If $cardUptimeArray2[$availableState] = "Available" And $cardUptimeArray2[$detectedType] <> "NANT-A" And $cardUptimeArray2[$idType] <> "R1.S1.ACU/NTIO" And $cardUptimeArray2[$idType] <> "R1.S1.NTB" Then
+				$editBox_CardsSummarySorted = $editBox_CardsSummarySorted & StringReplace(StringRight($cardUptimeArray2[$idType], 4), ".", "") & "	" & $cardUptimeArray2[$lastRestartTimePos] & ", " & $cardUptimeArray2[$lastRestartTimePos + 1] & @CRLF
+			Else
+				If StringRight($cardUptimeArray2[$idType], 4) <> "NTIO" And StringRight($cardUptimeArray2[$idType], 4) <> ".NTB" And StringRight($cardUptimeArray2[$idType], 4) <> ".NTA" Then
+					$editBox_CardsSummarySorted = $editBox_CardsSummarySorted & StringReplace(StringRight($cardUptimeArray2[$idType], 4), ".", "") & @CRLF
+				EndIf
+			EndIf
+		Next
+
+		For $i = 2 To 20
+			$cardUptimeArray2 = StringSplit($cardUptimeArray[$i], ",")
+
+			If StringRight($cardUptimeArray2[$idType], 4) = "NTIO" Then
+				If $cardUptimeArray2[$availableState] = "Available" Then
+					$editBox_CardsSummarySorted = $editBox_CardsSummarySorted & "LT17	" & $cardUptimeArray2[$lastRestartTimePos] & ", " & $cardUptimeArray2[$lastRestartTimePos + 1] & @CRLF
+				Else
+					$editBox_CardsSummarySorted = $editBox_CardsSummarySorted & "LT17" & @CRLF
+				EndIf
+
+			ElseIf StringRight($cardUptimeArray2[$idType], 4) = ".NTB" Then
+				If $cardUptimeArray2[$availableState] = "Available" Then
+					$editBox_CardsSummarySorted = $editBox_CardsSummarySorted & "LT18	" & $cardUptimeArray2[$lastRestartTimePos] & ", " & $cardUptimeArray2[$lastRestartTimePos + 1] & @CRLF
+				Else
+					$editBox_CardsSummarySorted = $editBox_CardsSummarySorted & "LT18" & @CRLF
+				EndIf
+			EndIf
+		Next
+	Else
+		$editBox_CardsSummarySorted = "Remove blank spaces/rows from start and end of the data in card status field! Whole data input needs to have 20 rows," & @CRLF & "select all rows in Table View, right click on selection and choose Copy."
+	EndIf
+
+EndFunc   ;==>CardSortFromCopy
+
+; -----------------------------------------------------------------
+; --- DELIMIT THE ENTRY COPIED FROM AMS WITHOUT USING EXCEL CSV ---
+; -----------------------------------------------------------------
+
+Func _AlarmsDelimiter()
+
+	$editBox_AlarmsAMSSorted = ""
+
+	Local $tempString = GUICtrlRead($editBox_AMSAlarms)
+	$tempString = StringReplace($tempString, '"', "")
+
+	$alarmsAMSArray = StringSplit($tempString, @CR)
+
+	Local $header = StringSplit($alarmsAMSArray[1], ",")
+
+	For $i = 1 To $header[0]
+		$editBox_AlarmsAMSSorted = $editBox_AlarmsAMSSorted & $header[$i] & "	"
+	Next
+
+	$editBox_AlarmsAMSSorted = $editBox_AlarmsAMSSorted & @CRLF
+
+	For $i = 2 To $alarmsAMSArray[0]
+		$alarmsAMSArrayDetail = StringSplit($alarmsAMSArray[$i], ",")
+		For $j = 1 To $alarmsAMSArrayDetail[0]
+			If $j = 2 Or $j = 4 Or $j = 12 Then
+				$editBox_AlarmsAMSSorted = $editBox_AlarmsAMSSorted & $alarmsAMSArrayDetail[$j] & ","
+			Else
+				$editBox_AlarmsAMSSorted = $editBox_AlarmsAMSSorted & $alarmsAMSArrayDetail[$j] & "	"
+			EndIf
+		Next
+		$editBox_AlarmsAMSSorted = $editBox_AlarmsAMSSorted & @CRLF
+	Next
+
+EndFunc   ;==>AlarmsDelimiter
+
+; ---------------------
+; --- IMPACT FORMAT ---
+; ---------------------
+
+Func _FormatImpact()
+
+	$impactFormat = ""
+	Local $impact = GUICtrlRead($editBox_Impact)
+	$impact = StringSplit($impact, @CR)
+	For $i = 1 To $impact[0] - 1
+		$impactFormat = $impactFormat & $impact[$i] & ", "
+	Next
+	$impactFormat = $impactFormat & $impact[$impact[0]] & " "
+
+EndFunc   ;==>FormatImpact
+
+; -----------------------
+; --- HELP BOX LADIDA ---
+; -----------------------
+
+Func _HelpBoxLadida()
+	MsgBox(32, "Help -> Tab -> Ladida", "1. Copy/paste the info directly from Ladida output text file, without any formatting." & @CR & @CR & _
+			"2. Copy/type the ticket numbers in correspondent input fields. Single field takes up to 8 digits.")
+EndFunc   ;==>HelpBoxLadida
+
+; -------------------------
+; --- HELP BOX TICKET 1 ---
+; -------------------------
+
+Func _HelpBoxTicket1()
+	MsgBox(32, "Help -> Tab -> Ticket 1", "1. You can double clear next to the ticket number, copy it and then paste it to Astrid." & @CR & @CR & _
+			"2. Set the correct SLA, 4h by default." & @CR & @CR & _
+			"3. Copy/paste the Logging , from the ticket. Remember to use chronological order of notes." & @CR & @CR & _
+			"4. Copy/paste the T-data from the ticket.")
+EndFunc   ;==>HelpBoxTicket1
+
+; -------------------------
+; --- HELP BOX TICKET 2 ---
+; -------------------------
+
+Func _HelpBoxTicket2()
+	MsgBox(32, "Help -> Tab -> Ticket 2", "1. You can double clear next to the ticket number, copy it and then paste it to Astrid." & @CR & @CR & _
+			"2. Set the correct SLA, 4h by default." & @CR & @CR & _
+			"3. Copy/paste the Logging from the ticket. Remember to use chronological order of notes." & @CR & @CR & _
+			"4. Copy/paste the T-data from the ticket.")
+EndFunc   ;==>HelpBoxTicket2
+
+; ---------------------------
+; --- HELP BOX CONCLUSION ---
+; ---------------------------
+
+Func _HelpBoxConclusion()
+	MsgBox(32, "Help -> Tab -> Conclusion", "1. Set the cause of the ticket (default it will be Resource Isolation)." & @CR & @CR & _
+			"2. You can use the yellow field to to write a non-case sensitive DSLAM name. When you'll click Import, the attached Install Base database will be searched for this DSLAM. Based on retrieved info, the application will set the DSLAM location type (SC/CO/BR, be aware - this may be incorrect due to Install Base construction), DSLAM type (ASAM or ISAM), city name, and if it is a Reggefiber location - the Reggefiber name. You can also input these values manually. Warning: in case of, for example, Subrack removed alarm you should also input the rack/subrack affected. With this added, the program cannod search for the DSLAM. You may add the R/S info after the Import button is used." & @CR & @CR & _
+			"3. You can use the Set as impact button to copy the DSLAM name to the Impact field." & @CR & @CR & _
+			"4. Shortly describe the reason for outage given in the tickets." & @CR & @CR & _
+			"5. If needed, add more DSLAMs in the impact field, any sign can be a separator. Also, you can input multiple DSLAMs vertically, one under another." & @CR & @CR & _
+			"6. The Remarks field is optional. Put any important information that does not fit in any of given fields there.")
+EndFunc   ;==>HelpBoxConclusion
+
+; --------------------
+; --- HELP BOX AMS ---
+; --------------------
+
+Func _HelpBoxAMS()
+	MsgBox(32, "Help -> Tab -> AMS data", "1. Select the DSLAM type with a radio button. If properly imported in Conclusion tab, it should be set automatically. The choice changes the view of this tab." & @CR & @CR & _
+			"2. Choose the NE type. Values are set automatically if DSLAM was properly imported, also the range of choice on the drop-down list is limited by DSLAM type. You may remove the values and input them manually." & @CR & @CR & _
+			"3. Copy/paste the Active software version from the DSLAM in AMS." & @CR & @CR & _
+			"4. If the choice is set to ISAM DSLAM, you have two options to input the uptime of cards:" & @CR & _
+			"   a) Copy/paste the uptime of each card manually. There is a vertical label with card numbers to help with this task. You can use Enter and leave blank lines if a card is not present in that slot. After pasting the uptime of the last present card, you don't need to use Enter - the rest LT's will fill automatically." & @CR & _
+			"   b) Select the 'Use AMS...' checkbox, copy the raw data from AMS Table View (click the white triangle and choose Copy All, then paste it in the field. The data will be delimited and formatted. Warning: it needs to have precisely 20 lines, the row counter should be green. If not, check if there are any white lines somewhere. You need to remove all lines except for column names and card data." & @CR & @CR & _
+			"5. Paste the raw alarm data from AMS Historical Alarms (click the small white triangle -> Copy All). The data will be delimited and formatted. You can remove the lines (alarms) which are unnecessary.")
+EndFunc   ;==>HelpBoxAMS
+
+; ------------------------
+; --- HELP BOX PREVIEW ---
+; ------------------------
+
+Func _HelpBoxPreview()
+	MsgBox(32, "Help -> Tab -> Preview", "1. Before saving the report, you need to generate the preview - use the correspondent button. The Save button will be enabled then." & @CR & @CR & _
+			"2. You may fully edit the Preview window. Only the content from this window will be saved. With each change in any of the previous tabs, you need to generate a new report." & @CR & @CR & _
+			"3. Save your report with Save file button. The name will be in <ticket1number_ticket2number.txt> format." & @CR & @CR & _
+			"4. Specify where to save the files:" & @CR & _
+			"   a) If 'Create file in...' checkbox is not selected, the file will be generated in the application's EXE directory." & @CR & _
+			"   b) If 'Create file in...' checkbox is selected, the file will be generated in a directory named with current week's number. The directory will be created if not present. Current week number is displayed at the checkbox." & @CR & @CR & _
+			"5. To reset the fields, click the Clear entries -> New Report button. The program will re-open with blank fields." & @CR & _
+			"6. If you want to delete the temp file, tick the checkbox. It will be erased after you create the new report.")
+EndFunc   ;==>HelpBoxPreview
+
+; ---------------
+; --- CREDITS ---
+; ---------------
+
+Func _Credits()
+	MsgBox(0, "Credits", "    _                      _ _        _                              _                 " & @CRLF & _
+			"  / /       ___ _  __|  (_) __| | __ _      /\  /\___| |_ __      ___ _ _ " & @CRLF & _
+			" / /     /    _` |/ _`   | |/ _` |/    _` |  / /_/ / _ \    |   '_   \ / _ \ '__|" & @CRLF & _
+			"/ /__|     (_| | (_|   |   | (_| |    (_| | / __  /  __/   |   |_) |  __/ |   " & @CRLF & _
+			"\____/\__,_|\__,_|_|\__,_|\__,_| \/ /_/ \___|_|  .__/ \___|_|   " & @CRLF & _
+			"                                                                           |_|              " & @CRLF & @CRLF & _
+			"	Bartosz Idkowiak @ Alcatel-Lucent 2015" & @CRLF & @CRLF & _
+			"")
+EndFunc   ;==>Credits
+
+; --------------------
+; --- HIDE TO TRAY ---
+; --------------------
+
+Func _MinimizeToTray()
+	GUISetState(@SW_SHOW)
+	TraySetState(2)
+EndFunc   ;==>_MinimizeToTray
